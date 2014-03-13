@@ -276,6 +276,8 @@ static bool handle_server_work(PgSocket *server, PktHdr *pkt)
 
 	/* reply to LISTEN, don't change connection state */
 	case 'A':		/* NotificationResponse */
+		if (notify_scan_server(server, pkt))
+			return true;
 		idle_tx = server->idle_tx;
 		ready = server->ready;
 		break;

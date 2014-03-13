@@ -511,6 +511,8 @@ static bool handle_client_work(PgSocket *client, PktHdr *pkt)
 		if (!find_server(client))
 			return false;
 
+		if (notify_scan_client(client, pkt)) break;
+
 		client->pool->stats.client_bytes += pkt->len;
 
 		/* tag the server as dirty */

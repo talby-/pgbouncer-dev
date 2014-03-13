@@ -105,6 +105,9 @@ void pktbuf_write_ExtQuery(PktBuf *buf, const char *query, int nargs, ...);
 #define pktbuf_write_Notice(buf, msg) \
 	pktbuf_write_generic(buf, 'N', "sscss", "SNOTICE", "C00000", 'M', msg, "");
 
+#define pktbuf_write_NotificationResponse(buf, pid, relname, extra) \
+	pktbuf_write_generic(buf, 'A', "iss", pid, relname, extra)
+
 /*
  * Shortcut for creating DataRow in memory.
  */

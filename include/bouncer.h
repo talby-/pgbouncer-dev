@@ -36,6 +36,7 @@
 #include <usual/mbuf.h>
 #include <usual/event.h>
 #include <usual/strpool.h>
+#include <usual/cbtree.h>
 
 #ifdef DBGVER
 #define FULLVER   PACKAGE_NAME " version " PACKAGE_VERSION " (" DBGVER ")"
@@ -99,6 +100,7 @@ extern int cf_sbuf_len;
 #include "stats.h"
 #include "takeover.h"
 #include "janitor.h"
+#include "notify.h"
 
 /* to avoid allocations will use static buffers */
 #define MAX_DBNAME	64
@@ -205,6 +207,7 @@ struct PgPool {
 	struct StatList used_server_list;	/* server just unlinked from clients */
 	struct StatList tested_server_list;	/* server in testing process */
 	struct StatList new_server_list;	/* servers in login phase */
+	struct CBTree *notify;			/* LISTEN reciever map */
 
 	PgStats stats;
 	PgStats newer_stats;
@@ -340,6 +343,7 @@ struct PgSocket {
 	};
 
 	VarCache vars;		/* state of interesting server parameters */
+	struct List notify;	/* client/server: active LISTENs */
 
 	SBuf sbuf;		/* stream buffer, must be last */
 };
@@ -394,6 +398,7 @@ extern usec_t cf_client_login_timeout;
 extern usec_t cf_idle_transaction_timeout;
 extern int cf_server_round_robin;
 extern int cf_disable_pqexec;
+extern int cf_delegate_notify;
 extern usec_t cf_dns_max_ttl;
 extern usec_t cf_dns_nxdomain_ttl;
 extern usec_t cf_dns_zone_check_period;

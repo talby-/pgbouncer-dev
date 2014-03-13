@@ -73,6 +73,7 @@ static void construct_client(void *obj)
 	memset(client, 0, sizeof(PgSocket));
 	list_init(&client->head);
 	sbuf_init(&client->sbuf, client_proto);
+	list_init(&client->notify);
 	client->state = CL_FREE;
 }
 
@@ -83,6 +84,7 @@ static void construct_server(void *obj)
 	memset(server, 0, sizeof(PgSocket));
 	list_init(&server->head);
 	sbuf_init(&server->sbuf, server_proto);
+	list_init(&server->notify);
 	server->state = SV_FREE;
 }
 
@@ -789,6 +791,8 @@ void disconnect_server(PgSocket *server, bool notify, const char *reason, ...)
 
 	Assert(server->link == NULL);
 
+	notify_server_cleanup(server);
+
 	/* notify server and close connection */
 	if (send_term && notify) {
 		if (!sbuf_answer(&server->sbuf, pkt_term, sizeof(pkt_term)))
@@ -855,6 +859,8 @@ void disconnect_client(PgSocket *client, bool notify, const char *reason, ...)
 		 */
 		send_pooler_error(client, false, reason);
 	}
+
+	notify_client_cleanup(client);
 
 	change_client_state(client, CL_JUSTFREE);
 	if (!sbuf_close(&client->sbuf))
